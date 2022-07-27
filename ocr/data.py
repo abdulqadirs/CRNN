@@ -1,4 +1,5 @@
 import os
+import re
 import numpy as np
 from pathlib import Path
 import random
@@ -28,10 +29,11 @@ class UPTIDataset(Dataset):
         text = text.replace(' ', '$') #replacing white space the '$'
         text = text.replace('\ue002', '')
         text = text.replace('\ue000', '')
+        text = re.sub(r'[a-z|A-Z]+', '', text)
         #reading image
         img = Image.open(img_path).convert('RGB')
         #flippling the image because urdu start from right to left
-        img = img.transpose(PIL.Image.FLIP_LEFT_RIGHT)
+        img = img.transpose(PIL.Image.Transpose.FLIP_LEFT_RIGHT)
         img = self.transform(img)
         
         return img, text
@@ -55,7 +57,7 @@ def get_train_loader(images_dir, labels_dir):
     train_sampler = SubsetRandomSampler(train_indices)
     valid_sampler = SubsetRandomSampler(valid_indices)
 
-    train_batch_size = 4
+    train_batch_size = 8
     valid_batch_size = 1
 
     training_loader = DataLoader(upti_dataset,
@@ -79,15 +81,16 @@ def get_test_loader(images_dir, labels_dir):
 
     return testing_loader
 
-images_dir = Path('dataset/upti-1/ligature_undegraded/')
-labels_dir = Path('dataset/upti-1/groundtruth')
-training_loader, validation_loader = get_train_loader(images_dir, labels_dir)
-testing_loader = get_test_loader(images_dir, labels_dir)
-print(len(testing_loader))
-for data in testing_loader:
-    images = data[0]
-    labels = data[1]
-    print(images.shape)
-    print(labels[0])
-    print(len(labels))
-    break
+#images_dir = Path('../dataset/upti-1/ligature_undegraded/')
+#labels_dir = Path('../dataset/upti-1/groundtruth')
+#training_loader, validation_loader = get_train_loader(images_dir, labels_dir)
+#testing_loader = get_test_loader(images_dir, labels_dir)
+#print(len(testing_loader))
+#for data in testing_loader:
+#    images = data[0]
+#    labels = data[1]
+#    print(images.shape)
+#    print(labels[0])
+#    print(len(labels))
+#    print('------')
+    #break
