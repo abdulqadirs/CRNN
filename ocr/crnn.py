@@ -1,12 +1,13 @@
 import torch
 from tqdm import tqdm
 import os
+from config import Config
 from loss import calculate_loss
 from datasets import load_metric
 cer_metric = load_metric("cer")
 
 def training(model, training_loader, validation_loader, optimizer, label_converter, epochs, start_epoch,  validate_every, output_dir):
-    device = 'cpu'
+    device = Config.get('device')
     running_loss = 0
     for epoch in range(start_epoch, epochs + 1):
         model.train()
@@ -24,9 +25,19 @@ def training(model, training_loader, validation_loader, optimizer, label_convert
         
         if epoch % validate_every == 0:
             avg_cer = validation(net, validation_loader)
+            models_dir = Path(output_dir / 'checkpoints')
+            if not os.path.exists(models_dir):
+                os.makedirs(models_dir)
+            checkpoint_file = 'crnn--epoch--' + str(epoch) + '.pth.tar'
+            checkpoint_path = Path(models_dir / checkpoint_file)
+            torch.save({'epoch': epoch,
+                        'net': net.state_dict(),
+                        'optimizer': optimizer.state_dict(),
+                        }, str(checkpoint_path))
+
 
 def validation(model, validation_loader, label_converter):
-    device = 'cpu'
+    device = Config.get('device')
     model.eval()
     eval_cer = []
     for i, data in tqdm(enumerate(validation_loader)):
